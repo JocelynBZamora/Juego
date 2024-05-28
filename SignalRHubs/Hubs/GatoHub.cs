@@ -9,7 +9,7 @@ namespace SignalRHubs.Hubs
         public async Task IniciarSesion(string nombreUsuario)
         {
             //verifica si el usuario esta en uso
-            if (usuarios.Values.Any(x =>
+            if (usuarios.Keys.Any(x =>
             x.Equals(nombreUsuario, StringComparison.OrdinalIgnoreCase)
             ))
             {
@@ -18,7 +18,7 @@ namespace SignalRHubs.Hubs
             }
             else
             {
-                usuarios[Context.ConnectionId] = nombreUsuario;
+                usuarios[nombreUsuario] =Context.ConnectionId;
                 await Clients.Caller.SendAsync("ReciveMensaje", "ok", "Sesión iniciada");
 
             }
@@ -26,10 +26,36 @@ namespace SignalRHubs.Hubs
 
 
         public static Queue<string> colaUsuarios = new Queue<string>();
+
+        public static int NumPartida = 0;
+        
+
         public async Task BuscarPartida(string nombreUsuario)
+        {
+            if (colaUsuarios.Count == 0)
+            {
+                colaUsuarios.Enqueue(nombreUsuario);
+            }
+            else
+            {
+                var contrincante=colaUsuarios.Dequeue();
+                string partida=$"partida {NumPartida} ";
+                await Groups.AddToGroupAsync(Context.ConnectionId, partida);
+                await Groups.AddToGroupAsync(usuarios[contrincante], partida);
+                NumPartida++;
+                await Clients.Groups(partida).SendAsync("Game Started",partida);
+                await Clients.Users(Context.ConnectionId).SendAsync("Play");
+            }
+        }
+
+
+
+        public async Task Jugar(string partida, string nombreUsuario,string tablero)
         {
 
         }
+
+        
 
 
     }
