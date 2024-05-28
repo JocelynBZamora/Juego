@@ -72,11 +72,12 @@ namespace SignalRHubs.Hubs
             var datosPartida = Partidas[partida];
             if(GanoXO(datosPartida.Turno,tablero))
             {
-
+                await Clients.Group(partida).SendAsync("GameOver",nombreUsuario);
             }
             else
             {
                 datosPartida.Turno = datosPartida.Turno == 'X' ? '0' : 'X';
+                await Clients.Groups(partida).SendAsync($"{nombreUsuario}");
             }
         }
 
