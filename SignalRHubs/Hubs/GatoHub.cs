@@ -50,7 +50,7 @@ namespace SignalRHubs.Hubs
                 await Groups.AddToGroupAsync(usuarios[contrincante], partida);
                 NumPartida++;
                 await Clients.Groups(partida).SendAsync("Game Started",partida);
-                await Clients.Users(Context.ConnectionId).SendAsync("Play");
+                await Clients.Users(Context.ConnectionId).SendAsync("Play","         ");
 
                 var datosPartida = new Partida()
                 {
@@ -77,7 +77,8 @@ namespace SignalRHubs.Hubs
             else
             {
                 datosPartida.Turno = datosPartida.Turno == 'X' ? '0' : 'X';
-                await Clients.Groups(partida).SendAsync($"{nombreUsuario}");
+                var siguiente=datosPartida.Turno=='X'?datosPartida.ConnectionId1 : datosPartida.ConnectionId2;
+                await Clients.Users(siguiente).SendAsync("Play",tablero);
             }
         }
 
